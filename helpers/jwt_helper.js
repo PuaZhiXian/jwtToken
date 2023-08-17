@@ -10,7 +10,7 @@ module.exports = {
             }
             const secret = process.env.ACCESS_TOKEN_SECRET
             const option = {
-                expiresIn: "15s"
+                expiresIn: "1d"
             }
             JWT.sign(payload, secret, option, (err, token) => {
                 if (err) {
