@@ -2,7 +2,7 @@ const express = require('express')
 const morgan = require('morgan')
 const createError = require('http-errors')
 require('dotenv').config()
-require('./helpers/init_mongodb')
+require('./helpers/init_mysql')
 const {verifyAccessToken} = require('./helpers/jwt_helper')
 
 const AuthRoute = require('./Routes/Auth.route')
@@ -29,9 +29,6 @@ app.get('/', verifyAccessToken, async (req, res, next) => {
 app.use('/auth', AuthRoute)
 
 app.use(async (req, res, next) => {
-    // const error = new Error('Not found')
-    // error.status = 404
-    // next(error)
     next(createError(404, 'This route does not exists'))
 })
 
@@ -46,7 +43,7 @@ app.use((err, req, res, next) => {
     })
 })
 
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT
 
 app.listen(PORT, () => {
     console.log(`server running on port ${PORT}`);
