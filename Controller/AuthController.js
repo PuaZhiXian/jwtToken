@@ -5,6 +5,7 @@ const User = require("../Models/User.model");
 const UserV2 = require("../Models/UserV2.model");
 const cookie = require("cookie-parser")
 const sequelize = require("../helpers/init_sequelize");
+const bcrypt = require("bcrypt");
 
 module.exports = {
     refreshToken: async (req, res, next) => {
@@ -90,10 +91,12 @@ module.exports = {
                     })
 
                     if (doesExist) throw  createError.Conflict(`${result.email} is registered`)
+                    const salt = await bcrypt.genSalt(10)
+                    this.password = await bcrypt.hash(result.password, salt)
 
                     const savedUser  = await UserV2.create({
                         email: result.email,
-                        password:'tester'
+                        password: this.password
                     })
                     const accessToken = await signAccessToken(savedUser.id)
                     const refreshToken = await signRefreshToken(savedUser.id)
