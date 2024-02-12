@@ -2,8 +2,9 @@ const createError = require("http-errors");
 const {verifyRefreshToken, signAccessToken, signRefreshToken} = require("../helpers/jwt_helper");
 const {authSchema} = require("../helpers/validation_schema");
 const User = require("../Models/User.model");
+const UserV2 = require("../Models/UserV2.model");
 const cookie = require("cookie-parser")
-
+const sequelize = require("../helpers/init_sequelize");
 
 module.exports = {
     refreshToken: async (req, res, next) => {
@@ -70,7 +71,7 @@ module.exports = {
             });
 
             // res.setHeader('Set-Cookie', [serializedAccessToken, serializedRefreshToken]);
-            res.send({message:'logged'})
+            res.send({message: 'logged'})
         } catch (error) {
             if (error.isJoi === true) return next(createError.BadRequest("Invalid Username/Password"))
             next(error)
@@ -81,15 +82,24 @@ module.exports = {
         try {
             const result = await authSchema.validateAsync(req.body)
 
-            const doesExist = await User.findOne({email: result.email})
-            if (doesExist) throw  createError.Conflict(`${result.email} is registered`)
+            sequelize.sync()
+                .then(async () => {
+                    const doesExist = await UserV2.findOne({
+                        raw: true,
+                        where: {email: result.email}
+                    })
 
-            const user = new User(result)
-            const savedUser = await user.save()
-            const accessToken = await signAccessToken(savedUser.id)
-            const refreshToken = await signRefreshToken(savedUser.id)
+                    if (doesExist) throw  createError.Conflict(`${result.email} is registered`)
 
-            res.send({accessToken, refreshToken})
+                    const savedUser  = await UserV2.create({
+                        email: result.email,
+                        password:'tester'
+                    })
+                    const accessToken = await signAccessToken(savedUser.id)
+                    const refreshToken = await signRefreshToken(savedUser.id)
+                    res.send({accessToken, refreshToken})
+                })
+                .catch((error) => console.log('Failed to synchronize with the database', error))
         } catch (error) {
             if (error.isJoi === true) error.status = 422
             next(error)

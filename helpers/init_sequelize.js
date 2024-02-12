@@ -18,4 +18,4 @@ sequelize
     .then(() => console.log('Successfully connected to the database!'))
     .catch((error) => console.log('Failed to connect the database:', error))
 
-// module.exports = sequelize
+module.exports = sequelize
