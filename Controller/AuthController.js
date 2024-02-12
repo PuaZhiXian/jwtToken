@@ -60,10 +60,9 @@ module.exports = {
                         path: '/',
                     });
 
-                    // res.setHeader('Set-Cookie', [serializedAccessToken, serializedRefreshToken]);
                     res.send({message: 'logged'})
                 })
-                .catch((error) => console.log('Failed to synchronize with the database', error))
+                .catch((error) => next(error))
         } catch (error) {
             if (error.isJoi === true) return next(createError.BadRequest("Invalid Username/Password"))
             next(error)
