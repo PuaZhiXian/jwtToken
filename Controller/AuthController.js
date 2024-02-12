@@ -92,7 +92,7 @@ module.exports = {
                     const refreshToken = await signRefreshToken(savedUser.id)
                     res.send({accessToken, refreshToken})
                 })
-                .catch((error) => console.log('Failed to synchronize with the database', error))
+                .catch((error) => next(error))
         } catch (error) {
             if (error.isJoi === true) error.status = 422
             next(error)
@@ -103,6 +103,21 @@ module.exports = {
             const {refreshToken} = req.body
             if (!refreshToken) throw  createError.BadRequest()
             const userId = await verifyRefreshToken(refreshToken)
+            res.cookies("accessToken", null, {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'strict',
+                maxAge: 60 * 60 * 24, // 1 day in seconds
+                path: '/',
+            });
+
+            res.cookies("refreshToken", null, {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'strict',
+                maxAge: 60 * 60 * 24 * 365, // 1 year in seconds
+                path: '/',
+            });
             //DELETE refresh token from db
             res.sendStatus(204)
         } catch (error) {
