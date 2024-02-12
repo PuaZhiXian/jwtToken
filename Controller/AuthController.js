@@ -78,7 +78,6 @@ module.exports = {
 
     },
     register: async (req, res, next) => {
-        console.log(req.body)
         try {
             const result = await authSchema.validateAsync(req.body)
 
